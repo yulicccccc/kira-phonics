@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kira's Phonics Active Recall</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #777;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #eef2f5;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card:hover {
+            background: #e1e8ed;
+            border-color: var(--primary-color);
+        }
+        .chunk-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .answer-display {
+            display: none;
+            margin-top: 15px;
+        }
+        .ipa-text {
+            font-size: 1.5em;
+            color: #e74c3c;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+        .word-text {
+            font-size: 1.2em;
+            color: #27ae60;
+            margin-top: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Phonics 高压锅</h1>
+    <p class="subtitle">1. 见字发音 (Decoding) | 2. 听音拼写 (Encoding)</p>
+
+    <div class="card" id="flashcard" onclick="revealAnswer()">
+        <div class="chunk-display" id="chunkText">Press Next</div>
+        <div class="answer-display" id="answerArea">
+            <div class="ipa-text" id="ipaText"></div>
+            <div class="word-text" id="wordText"></div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="playAudio()">🔊 听音盲猜</button>
+        <button onclick="nextCard()">⏭️ 下一个</button>
+    </div>
+</div>
+
+<script>
+    const phonicsData = [
+        { chunk: "ea", ipa: "/i:/", word: "tea (茶)", example: "tea" },
+        { chunk: "ee", ipa: "/i:/", word: "see (看见)", example: "see" },
+        { chunk: "igh", ipa: "/aɪ/", word: "high (高)", example: "high" },
+        { chunk: "oa", ipa: "/oʊ/", word: "boat (船)", example: "boat" },
+        { chunk: "ou", ipa: "/aʊ/", word: "out (出)", example: "out" },
+        { chunk: "ow", ipa: "/aʊ/", word: "cow (牛)", example: "cow" },
+        { chunk: "tion", ipa: "/ʃən/", word: "action (行动)", example: "action" },
+        { chunk: "ch", ipa: "/tʃ/", word: "chair (椅子)", example: "chair" },
+        { chunk: "sh", ipa: "/ʃ/", word: "shoe (鞋)", example: "shoe" },
+        { chunk: "th", ipa: "/θ/ or /ð/", word: "think / this", example: "think" },
+        { chunk: "ar", ipa: "/ɑːr/", word: "car (车)", example: "car" },
+        { chunk: "or", ipa: "/ɔːr/", word: "for (为了)", example: "for" }
+    ];
+
+    let currentIndex = -1;
+    let isRevealed = false;
+
+    function nextCard() {
+        currentIndex = Math.floor(Math.random() * phonicsData.length);
+        const currentData = phonicsData[currentIndex];
+        
+        document.getElementById("chunkText").innerText = currentData.chunk;
+        document.getElementById("chunkText").style.display = "block";
+        document.getElementById("ipaText").innerText = currentData.ipa;
+        document.getElementById("wordText").innerText = "e.g. " + currentData.word;
+        document.getElementById("answerArea").style.display = "none";
+        
+        isRevealed = false;
+    }
+
+    function revealAnswer() {
+        if (currentIndex === -1) return;
+        document.getElementById("answerArea").style.display = "block";
+        document.getElementById("chunkText").style.display = "block";
+        if (!isRevealed) {
+            playAudio();
+            isRevealed = true;
+        }
+    }
+
+    function playAudio() {
+        if (currentIndex === -1) nextCard();
+        const currentData = phonicsData[currentIndex];
+        if (!isRevealed) document.getElementById("chunkText").style.display = "none";
+        
+        const utterance = new SpeechSynthesisUtterance(currentData.example);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+    }
+</script>
+
+</body>
+</html>
