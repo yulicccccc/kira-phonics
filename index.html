@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kira's Phonics Active Recall</title>
+    <title>Kira's Phonics Active Recall V2</title>
     <style>
         :root {
             --primary-color: #4A90E2;
@@ -34,6 +34,7 @@
         h1 {
             color: var(--primary-color);
             margin-bottom: 5px;
+            font-size: 1.8em;
         }
         p.subtitle {
             color: #777;
@@ -53,10 +54,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-        .card:hover {
-            background: #e1e8ed;
-            border-color: var(--primary-color);
         }
         .chunk-display {
             font-size: 4em;
@@ -79,100 +76,176 @@
             color: #27ae60;
             margin-top: 5px;
         }
+        .action-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
         .btn-group {
             display: flex;
             gap: 15px;
             justify-content: center;
-            flex-wrap: wrap;
+        }
+        .feedback-group {
+            display: none; /* 初始隐藏，翻牌后显示 */
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
         }
         button {
-            background-color: var(--primary-color);
-            color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 20px;
             font-size: 1em;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.2s;
             font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+            flex: 1;
         }
-        button:hover {
-            background-color: #357abd;
+        button:hover { opacity: 0.8; }
+        .btn-audio { background-color: #95a5a6; }
+        .btn-reveal { background-color: var(--primary-color); }
+        .btn-bad { background-color: #e74c3c; } /* 红色，代表不会 */
+        .btn-good { background-color: #2ecc71; } /* 绿色，代表会了 */
+        
+        #stats {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Phonics 高压锅</h1>
-    <p class="subtitle">1. 见字发音 (Decoding) | 2. 听音拼写 (Encoding)</p>
+    <h1>Phonics 智能高压锅</h1>
+    <p class="subtitle">根据你的反馈，智能追问重难点</p>
 
-    <div class="card" id="flashcard" onclick="revealAnswer()">
-        <div class="chunk-display" id="chunkText">Press Next</div>
+    <div class="card" onclick="revealAnswer()">
+        <div class="chunk-display" id="chunkText">Press Start</div>
         <div class="answer-display" id="answerArea">
             <div class="ipa-text" id="ipaText"></div>
             <div class="word-text" id="wordText"></div>
         </div>
     </div>
 
-    <div class="btn-group">
-        <button onclick="playAudio()">🔊 听音盲猜</button>
-        <button onclick="nextCard()">⏭️ 下一个</button>
+    <div class="action-area">
+        <div class="btn-group" id="initialBtns">
+            <button class="btn-audio" onclick="playAudio()">🔊 听音盲猜</button>
+            <button class="btn-reveal" onclick="revealAnswer()">👀 看答案</button>
+        </div>
+        
+        <div class="feedback-group" id="feedbackBtns">
+            <button class="btn-bad" onclick="recordFeedback('bad')">🔴 卡壳了 (加练)</button>
+            <button class="btn-good" onclick="recordFeedback('good')">🟢 秒回 (降低频率)</button>
+        </div>
     </div>
+    
+    <div id="stats">当前卡片权重: <span id="weightDisplay">1</span></div>
 </div>
 
 <script>
-    const phonicsData = [
-        { chunk: "ea", ipa: "/i:/", word: "tea (茶)", example: "tea" },
-        { chunk: "ee", ipa: "/i:/", word: "see (看见)", example: "see" },
-        { chunk: "igh", ipa: "/aɪ/", word: "high (高)", example: "high" },
-        { chunk: "oa", ipa: "/oʊ/", word: "boat (船)", example: "boat" },
-        { chunk: "ou", ipa: "/aʊ/", word: "out (出)", example: "out" },
-        { chunk: "ow", ipa: "/aʊ/", word: "cow (牛)", example: "cow" },
-        { chunk: "tion", ipa: "/ʃən/", word: "action (行动)", example: "action" },
-        { chunk: "ch", ipa: "/tʃ/", word: "chair (椅子)", example: "chair" },
-        { chunk: "sh", ipa: "/ʃ/", word: "shoe (鞋)", example: "shoe" },
-        { chunk: "th", ipa: "/θ/ or /ð/", word: "think / this", example: "think" },
-        { chunk: "ar", ipa: "/ɑːr/", word: "car (车)", example: "car" },
-        { chunk: "or", ipa: "/ɔːr/", word: "for (为了)", example: "for" }
+    // 增加 weight 属性。weight 越高，被抽中的概率越大。
+    let phonicsData = [
+        { chunk: "ea", ipa: "/i:/", word: "tea", example: "tea", weight: 10 },
+        { chunk: "ee", ipa: "/i:/", word: "see", example: "see", weight: 10 },
+        { chunk: "igh", ipa: "/aɪ/", word: "high", example: "high", weight: 10 },
+        { chunk: "oa", ipa: "/oʊ/", word: "boat", example: "boat", weight: 10 },
+        { chunk: "ou", ipa: "/aʊ/", word: "out", example: "out", weight: 10 },
+        { chunk: "ow", ipa: "/aʊ/", word: "cow", example: "cow", weight: 10 },
+        { chunk: "tion", ipa: "/ʃən/", word: "action", example: "action", weight: 10 },
+        { chunk: "ch", ipa: "/tʃ/", word: "chair", example: "chair", weight: 10 },
+        { chunk: "sh", ipa: "/ʃ/", word: "shoe", example: "shoe", weight: 10 },
+        { chunk: "th", ipa: "/θ/ or /ð/", word: "think / this", example: "think", weight: 10 },
+        { chunk: "ar", ipa: "/ɑːr/", word: "car", example: "car", weight: 10 },
+        { chunk: "or", ipa: "/ɔːr/", word: "for", example: "for", weight: 10 }
     ];
 
     let currentIndex = -1;
     let isRevealed = false;
 
+    // 权重随机算法：重点突破
+    function getWeightedRandomIndex() {
+        let totalWeight = phonicsData.reduce((sum, item) => sum + item.weight, 0);
+        let randomNum = Math.random() * totalWeight;
+        let weightSum = 0;
+        
+        for (let i = 0; i < phonicsData.length; i++) {
+            weightSum += phonicsData[i].weight;
+            if (randomNum <= weightSum) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     function nextCard() {
-        currentIndex = Math.floor(Math.random() * phonicsData.length);
+        currentIndex = getWeightedRandomIndex();
         const currentData = phonicsData[currentIndex];
         
         document.getElementById("chunkText").innerText = currentData.chunk;
         document.getElementById("chunkText").style.display = "block";
         document.getElementById("ipaText").innerText = currentData.ipa;
         document.getElementById("wordText").innerText = "e.g. " + currentData.word;
+        document.getElementById("weightDisplay").innerText = currentData.weight;
+        
+        // 隐藏答案和反馈按钮，显示初始按钮
         document.getElementById("answerArea").style.display = "none";
+        document.getElementById("feedbackBtns").style.display = "none";
+        document.getElementById("initialBtns").style.display = "flex";
         
         isRevealed = false;
     }
 
     function revealAnswer() {
-        if (currentIndex === -1) return;
+        if (currentIndex === -1) {
+            nextCard();
+            return;
+        }
+        
         document.getElementById("answerArea").style.display = "block";
         document.getElementById("chunkText").style.display = "block";
+        
+        // 隐藏初始按钮，强制显示反馈按钮
+        document.getElementById("initialBtns").style.display = "none";
+        document.getElementById("feedbackBtns").style.display = "flex";
+        
         if (!isRevealed) {
-            playAudio();
+            playAudioInternal();
             isRevealed = true;
         }
     }
 
+    // 核心反馈逻辑：改变权重
+    function recordFeedback(status) {
+        if (status === 'bad') {
+            // 卡壳：权重增加，大幅提高出现概率
+            phonicsData[currentIndex].weight += 15; 
+        } else if (status === 'good') {
+            // 秒回：权重骤减，最低降到 1，基本不出现
+            phonicsData[currentIndex].weight = Math.max(1, phonicsData[currentIndex].weight - 5);
+        }
+        nextCard();
+    }
+
     function playAudio() {
         if (currentIndex === -1) nextCard();
-        const currentData = phonicsData[currentIndex];
         if (!isRevealed) document.getElementById("chunkText").style.display = "none";
-        
+        playAudioInternal();
+    }
+
+    function playAudioInternal() {
+        const currentData = phonicsData[currentIndex];
         const utterance = new SpeechSynthesisUtterance(currentData.example);
         utterance.lang = 'en-US';
         utterance.rate = 0.8;
         window.speechSynthesis.speak(utterance);
     }
+    
+    // 初始化第一张卡片
+    nextCard();
 </script>
 
 </body>
