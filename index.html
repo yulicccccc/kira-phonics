@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kira's Phonics Active Recall V2</title>
+    <title>Kira's Phonics SRS V4</title>
     <style>
         :root {
             --primary-color: #4A90E2;
@@ -11,172 +11,111 @@
             --card-bg: #ffffff;
             --text-color: #333333;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 90%;
-        }
-        h1 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-            font-size: 1.8em;
-        }
-        p.subtitle {
-            color: #777;
-            font-size: 0.9em;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: #eef2f5;
-            border: 2px dashed #bdc3c7;
-            border-radius: 10px;
-            padding: 40px 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .chunk-display {
-            font-size: 4em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 0;
-        }
-        .answer-display {
-            display: none;
-            margin-top: 15px;
-        }
-        .ipa-text {
-            font-size: 1.5em;
-            color: #e74c3c;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-        }
-        .word-text {
-            font-size: 1.2em;
-            color: #27ae60;
-            margin-top: 5px;
-        }
-        .action-area {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-        }
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .feedback-group {
-            display: none; /* 初始隐藏，翻牌后显示 */
-            gap: 15px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        button {
-            border: none;
-            padding: 12px 20px;
-            font-size: 1em;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            transition: opacity 0.2s;
-            flex: 1;
-        }
-        button:hover { opacity: 0.8; }
-        .btn-audio { background-color: #95a5a6; }
-        .btn-reveal { background-color: var(--primary-color); }
-        .btn-bad { background-color: #e74c3c; } /* 红色，代表不会 */
-        .btn-good { background-color: #2ecc71; } /* 绿色，代表会了 */
-        
-        #stats {
-            margin-top: 20px;
-            font-size: 0.8em;
-            color: #888;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+        .container { text-align: center; background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h1 { color: var(--primary-color); margin-bottom: 5px; font-size: 1.5em; }
+        p.subtitle { color: #777; font-size: 0.85em; margin-bottom: 25px; }
+        .card { background: #eef2f5; border: 2px dashed #bdc3c7; border-radius: 10px; padding: 40px 20px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s ease; min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .chunk-display { font-size: 4.5em; font-weight: bold; color: #2c3e50; margin: 0; }
+        .answer-display { display: none; margin-top: 15px; }
+        .ipa-text { font-size: 1.8em; color: #e74c3c; font-family: 'Courier New', monospace; font-weight: bold; }
+        .word-text { font-size: 1.2em; color: #27ae60; margin-top: 5px; }
+        .action-area { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; }
+        .feedback-group { display: none; gap: 8px; justify-content: center; width: 100%; }
+        button { border: none; padding: 12px 10px; font-size: 0.95em; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: opacity 0.2s; flex: 1; }
+        button:active { opacity: 0.7; transform: scale(0.98); }
+        .btn-audio { background-color: #95a5a6; } .btn-reveal { background-color: var(--primary-color); }
+        .btn-bad { background-color: #e74c3c; } .btn-hesitate { background-color: #f39c12; } .btn-good { background-color: #2ecc71; }
+        #stats { margin-top: 20px; font-size: 0.75em; color: #bdc3c7; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>Phonics 智能高压锅</h1>
-    <p class="subtitle">根据你的反馈，智能追问重难点</p>
-
+    <h1>Phonics 高压锅 V4</h1>
+    <p class="subtitle">Phase 1: 核心元音与辅音群</p>
     <div class="card" onclick="revealAnswer()">
-        <div class="chunk-display" id="chunkText">Press Start</div>
+        <div class="chunk-display" id="chunkText">Start</div>
         <div class="answer-display" id="answerArea">
             <div class="ipa-text" id="ipaText"></div>
             <div class="word-text" id="wordText"></div>
         </div>
     </div>
-
     <div class="action-area">
         <div class="btn-group" id="initialBtns">
-            <button class="btn-audio" onclick="playAudio()">🔊 听音盲猜</button>
+            <button class="btn-audio" onclick="playAudio()">🔊 听音盲写</button>
             <button class="btn-reveal" onclick="revealAnswer()">👀 看答案</button>
         </div>
-        
         <div class="feedback-group" id="feedbackBtns">
-            <button class="btn-bad" onclick="recordFeedback('bad')">🔴 卡壳了 (加练)</button>
-            <button class="btn-good" onclick="recordFeedback('good')">🟢 秒回 (降低频率)</button>
+            <button class="btn-bad" onclick="recordFeedback('bad')">🔴 卡壳</button>
+            <button class="btn-hesitate" onclick="recordFeedback('hesitate')">🟡 犹豫</button>
+            <button class="btn-good" onclick="recordFeedback('good')">🟢 秒回</button>
         </div>
     </div>
-    
-    <div id="stats">当前卡片权重: <span id="weightDisplay">1</span></div>
+    <div id="stats">当前卡片权重: <span id="weightDisplay">-</span> | 剩余重难点: <span id="activeCount">-</span></div>
 </div>
-
 <script>
-    // 增加 weight 属性。weight 越高，被抽中的概率越大。
+    // Phase 1 实战题库 (35个容易混淆的组合)
     let phonicsData = [
-        { chunk: "ea", ipa: "/i:/", word: "tea", example: "tea", weight: 10 },
+        // Long A
+        { chunk: "ai", ipa: "/eɪ/", word: "rain", example: "rain", weight: 10 },
+        { chunk: "ay", ipa: "/eɪ/", word: "play", example: "play", weight: 10 },
+        { chunk: "a_e", ipa: "/eɪ/", word: "cake", example: "cake", weight: 10 },
+        // Long E
         { chunk: "ee", ipa: "/i:/", word: "see", example: "see", weight: 10 },
+        { chunk: "ea", ipa: "/i:/", word: "tea", example: "tea", weight: 10 },
+        { chunk: "ey", ipa: "/i:/", word: "key", example: "key", weight: 10 },
+        { chunk: "y (末尾)", ipa: "/i:/", word: "happy", example: "happy", weight: 10 },
+        // Long I
         { chunk: "igh", ipa: "/aɪ/", word: "high", example: "high", weight: 10 },
+        { chunk: "ie", ipa: "/aɪ/", word: "pie", example: "pie", weight: 10 },
+        { chunk: "i_e", ipa: "/aɪ/", word: "bike", example: "bike", weight: 10 },
+        { chunk: "y (单音节)", ipa: "/aɪ/", word: "fly", example: "fly", weight: 10 },
+        // Long O
         { chunk: "oa", ipa: "/oʊ/", word: "boat", example: "boat", weight: 10 },
+        { chunk: "ow", ipa: "/oʊ/", word: "snow", example: "snow", weight: 10 },
+        { chunk: "o_e", ipa: "/oʊ/", word: "bone", example: "bone", weight: 10 },
+        // Long U & Diphthongs
+        { chunk: "ue", ipa: "/u:/", word: "blue", example: "blue", weight: 10 },
+        { chunk: "ui", ipa: "/u:/", word: "fruit", example: "fruit", weight: 10 },
+        { chunk: "ew", ipa: "/u:/ or /ju:/", word: "new / few", example: "new", weight: 10 },
+        { chunk: "oo", ipa: "/u:/ or /ʊ/", word: "moon / book", example: "moon", weight: 10 },
         { chunk: "ou", ipa: "/aʊ/", word: "out", example: "out", weight: 10 },
         { chunk: "ow", ipa: "/aʊ/", word: "cow", example: "cow", weight: 10 },
-        { chunk: "tion", ipa: "/ʃən/", word: "action", example: "action", weight: 10 },
+        { chunk: "oi", ipa: "/ɔɪ/", word: "coin", example: "coin", weight: 10 },
+        { chunk: "oy", ipa: "/ɔɪ/", word: "boy", example: "boy", weight: 10 },
+        // Bossy R
+        { chunk: "ar", ipa: "/ɑːr/", word: "car", example: "car", weight: 10 },
+        { chunk: "or", ipa: "/ɔːr/", word: "for", example: "for", weight: 10 },
+        { chunk: "er", ipa: "/ɜːr/", word: "her", example: "her", weight: 10 },
+        { chunk: "ir", ipa: "/ɜːr/", word: "bird", example: "bird", weight: 10 },
+        { chunk: "ur", ipa: "/ɜːr/", word: "turn", example: "turn", weight: 10 },
+        // Digraphs & Trigraphs
         { chunk: "ch", ipa: "/tʃ/", word: "chair", example: "chair", weight: 10 },
         { chunk: "sh", ipa: "/ʃ/", word: "shoe", example: "shoe", weight: 10 },
         { chunk: "th", ipa: "/θ/ or /ð/", word: "think / this", example: "think", weight: 10 },
-        { chunk: "ar", ipa: "/ɑːr/", word: "car", example: "car", weight: 10 },
-        { chunk: "or", ipa: "/ɔːr/", word: "for", example: "for", weight: 10 }
+        { chunk: "wh", ipa: "/w/", word: "what", example: "what", weight: 10 },
+        { chunk: "ph", ipa: "/f/", word: "phone", example: "phone", weight: 10 },
+        { chunk: "dge", ipa: "/dʒ/", word: "bridge", example: "bridge", weight: 10 },
+        { chunk: "tch", ipa: "/tʃ/", word: "catch", example: "catch", weight: 10 },
+        { chunk: "tion", ipa: "/ʃən/", word: "action", example: "action", weight: 10 }
     ];
 
     let currentIndex = -1;
     let isRevealed = false;
 
-    // 权重随机算法：重点突破
+    function updateStats() {
+        let active = phonicsData.filter(item => item.weight > 2).length;
+        document.getElementById("activeCount").innerText = active;
+    }
+
     function getWeightedRandomIndex() {
         let totalWeight = phonicsData.reduce((sum, item) => sum + item.weight, 0);
         let randomNum = Math.random() * totalWeight;
         let weightSum = 0;
-        
         for (let i = 0; i < phonicsData.length; i++) {
             weightSum += phonicsData[i].weight;
-            if (randomNum <= weightSum) {
-                return i;
-            }
+            if (randomNum <= weightSum) return i;
         }
         return 0;
     }
@@ -184,49 +123,31 @@
     function nextCard() {
         currentIndex = getWeightedRandomIndex();
         const currentData = phonicsData[currentIndex];
-        
         document.getElementById("chunkText").innerText = currentData.chunk;
         document.getElementById("chunkText").style.display = "block";
         document.getElementById("ipaText").innerText = currentData.ipa;
         document.getElementById("wordText").innerText = "e.g. " + currentData.word;
         document.getElementById("weightDisplay").innerText = currentData.weight;
-        
-        // 隐藏答案和反馈按钮，显示初始按钮
         document.getElementById("answerArea").style.display = "none";
         document.getElementById("feedbackBtns").style.display = "none";
         document.getElementById("initialBtns").style.display = "flex";
-        
         isRevealed = false;
+        updateStats();
     }
 
     function revealAnswer() {
-        if (currentIndex === -1) {
-            nextCard();
-            return;
-        }
-        
+        if (currentIndex === -1) { nextCard(); return; }
         document.getElementById("answerArea").style.display = "block";
         document.getElementById("chunkText").style.display = "block";
-        
-        // 隐藏初始按钮，强制显示反馈按钮
         document.getElementById("initialBtns").style.display = "none";
         document.getElementById("feedbackBtns").style.display = "flex";
-        
-        if (!isRevealed) {
-            playAudioInternal();
-            isRevealed = true;
-        }
+        if (!isRevealed) { playAudioInternal(); isRevealed = true; }
     }
 
-    // 核心反馈逻辑：改变权重
     function recordFeedback(status) {
-        if (status === 'bad') {
-            // 卡壳：权重增加，大幅提高出现概率
-            phonicsData[currentIndex].weight += 15; 
-        } else if (status === 'good') {
-            // 秒回：权重骤减，最低降到 1，基本不出现
-            phonicsData[currentIndex].weight = Math.max(1, phonicsData[currentIndex].weight - 5);
-        }
+        if (status === 'bad') phonicsData[currentIndex].weight += 15;
+        else if (status === 'hesitate') phonicsData[currentIndex].weight += 5;
+        else if (status === 'good') phonicsData[currentIndex].weight = Math.max(1, phonicsData[currentIndex].weight - 10);
         nextCard();
     }
 
@@ -244,9 +165,7 @@
         window.speechSynthesis.speak(utterance);
     }
     
-    // 初始化第一张卡片
     nextCard();
 </script>
-
 </body>
 </html>
